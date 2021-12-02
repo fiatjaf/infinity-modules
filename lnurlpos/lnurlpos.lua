@@ -76,7 +76,7 @@ actions = {
         local strpin = tostring(math.floor(pin))
         local ct, iv = lnurl.successaction_aes(invoice.preimage, strpin)
         return {
-          routes = {''},
+          routes = emptyarray(),
           pr = invoice.bolt11,
           successAction = {
             tag = 'aes',
