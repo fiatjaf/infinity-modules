@@ -34,9 +34,9 @@ models = {
 actions = {
   lnurlp = {
     fields = {
-      { name = "nce", type = "string", required = true },
-      { name = "pld", type = "string", required = true },
-      { name = "amount", type = "string" },
+      { name = "n", display = "encryption nonce", type = "string", required = true },
+      { name = "p", display = "encrypted payload", type = "string", required = true },
+      { name = "lnurl", display = "amount (in msat)", type = "string" },
     },
     handler = function (params)
       local defs = db.definition.get()
@@ -47,7 +47,7 @@ actions = {
         }
       end
 
-      local pin, amt, err = utils.snigirev_decrypt(defs.key, params.nce, params.pld)
+      local pin, amt, err = utils.snigirev_decrypt(defs.key, params.n, params.p)
       if err then
         return {
           status = 'ERROR',
@@ -55,12 +55,12 @@ actions = {
         }
       end
 
-      local msat_amount
       if defs.currency == 'sat' then
-        msat_amount = amt * 1000
-      else
-        msat_amount = utils.get_msats_per_fiat_unit(amt / 100)
+        amt = amt * 1000
       end
+      local msat_amount = math.ceil(
+        (amt / 100) * utils.get_msats_per_fiat_unit(defs.currency)
+      )
 
       local metadata = json.encode({
         {'text/plain', defs.description}
@@ -68,13 +68,27 @@ actions = {
 
       if params.amount then
         -- second call, return invoice
-        local invoice = wallet.create_invoice({
+        local invoice, err = wallet.create_invoice({
           description_hash = utils.sha256(metadata),
           msatoshi = msat_amount,
         })
 
+        if err then
+          return {
+            status = 'ERROR',
+            reason = err
+          }
+        end
+
         local strpin = tostring(math.floor(pin))
-        local ct, iv = lnurl.successaction_aes(invoice.preimage, strpin)
+        local ct, iv, err = lnurl.successaction_aes(invoice.preimage, strpin)
+        if err then
+          return {
+            status = 'ERROR',
+            reason = 'Failed to encrypt confirmation code: ' .. err
+          }
+        end
+
         return {
           routes = emptyarray(),
           pr = invoice.bolt11,
@@ -113,7 +127,7 @@ actions = {
 
       local base_url = params._url:gsub("/action/.*", '/action/lnurlp')
       local nonce, payload = utils.snigirev_encrypt(defs.key, params.pin, params.amount)
-      return lnurl.bech32_encode(base_url .. "?nce=" .. nonce .. "&pld=" .. payload)
+      return lnurl.bech32_encode(base_url .. "?n=" .. nonce .. "&p=" .. payload)
     end,
   }
 }
