@@ -2,7 +2,7 @@ title = 'WebShop'
 
 description = [[A generic e-commerce backend with a simple UI, to be manually tweaked for your purposes. Can be also used just as a simple API.
 
-[Example Storefront]($appBase/)
+[Example Storefront]($extBase/)
 ]]
 
 models = {
