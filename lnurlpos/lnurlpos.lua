@@ -34,7 +34,6 @@ models = {
 actions = {
   lnurlp = {
     fields = {
-      { name = "n", display = "encryption nonce", type = "string", required = true },
       { name = "p", display = "encrypted payload", type = "string", required = true },
       { name = "lnurl", display = "amount (in msat)", type = "string" },
     },
@@ -47,7 +46,7 @@ actions = {
         }
       end
 
-      local pin, amt, err = utils.snigirev_decrypt(defs.key, params.n, params.p)
+      local pin, amt, err = utils.snigirev_decrypt(defs.key, params.p)
       if err then
         return {
           status = 'ERROR',
@@ -126,8 +125,8 @@ actions = {
       end
 
       local base_url = params._url:gsub("/action/.*", '/action/lnurlp')
-      local nonce, payload = utils.snigirev_encrypt(defs.key, params.pin, params.amount)
-      return lnurl.bech32_encode(base_url .. "?n=" .. nonce .. "&p=" .. payload)
+      local blob = utils.snigirev_encrypt(defs.key, params.pin, params.amount)
+      return lnurl.bech32_encode(base_url .. "?p=" .. blob)
     end,
   }
 }
