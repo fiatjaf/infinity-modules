@@ -19,4 +19,5 @@ globals = {
 ignore = {
   "411", -- Redefining a local variable.
   "421", -- Shadowing a local variable.
+  "631", -- Line too long
 }
