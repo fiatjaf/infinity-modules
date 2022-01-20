@@ -22,5 +22,11 @@ triggers = {
     if server then
       tunnel.open(server.server, server.identifier)
     end
+  end,
+
+  api_db_set = function (data)
+    if data.value.identifier and data.value.identifier ~= '' then
+      tunnel.open(data.value.server, data.value.identifier)
+    end
   end
 }
