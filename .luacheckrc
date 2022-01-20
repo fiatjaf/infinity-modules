@@ -14,6 +14,7 @@ globals = {
   "actions",
   "files",
   "emptyarray",
+  "tunnel",
 }
 
 ignore = {
