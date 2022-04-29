@@ -1,6 +1,10 @@
 title = 'Adfree Podcasts'
 
-description = [[]]
+description = [[
+  Given a base podcast feed and adfree episodes that match the names of existing episodes, build a new "global" feed that has the adfree episodes with LNURLs that can be paid to generate feeds with unique IDs (with the actual bought episodes).
+
+  After the listener has already subscribed to the feed with the unique ID, regardless of having done that separately or through the purchase from the main feed, he can keep buying directly on the unique feed.
+]]
 
 models = {
   {
