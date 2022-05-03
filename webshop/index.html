@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 
 <title>Shop</title>
-<link
-  href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
-  rel="stylesheet"
-  type="text/css"
-/>
-<link
-  href="https://cdn.jsdelivr.net/npm/quasar@2.3.2/dist/quasar.prod.css"
-  rel="stylesheet"
-  type="text/css"
-/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet"
+  type="text/css" />
+<link href="https://cdn.jsdelivr.net/npm/quasar@2.3.2/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
 
 <div id="app" class="q-gutter-md q-mx-md">
   <div class="full-width row justify-center items-center q-gutter-md">
@@ -20,15 +13,15 @@
       </q-card-section>
       <q-card-section>
         <div class="text-h4 text-primary">
-          {{ metadata.name }} <q-icon name="storefront" />
+          {{ metadata.name }}
+          <q-icon name="storefront" />
         </div>
         <div class="text-subtitle">{{ metadata.description }}</div>
       </q-card-section>
     </q-card>
   </div>
 
-  <div
-    class="
+  <div class="
       full-width
       row
       wrap
@@ -36,12 +29,9 @@
       items-start
       content-start
       q-gutter-md
-    "
-  >
+    ">
     <q-card v-for="product in products" :key="product.key" flat bordered>
-      <q-card-section
-        v-if="product.value.picture && product.value.picture.length"
-      >
+      <q-card-section v-if="product.value.picture && product.value.picture.length">
         <q-img :src="product.value.picture" />
       </q-card-section>
       <q-card-section>
@@ -51,22 +41,15 @@
         </div>
       </q-card-section>
       <q-card-actions align="center">
-        <q-btn
-          v-if="buying?.key !== product.key"
-          push
-          color="secondary"
-          :label="`Buy for ${product.value.price.amount} ${product.value.price.unit}`"
-          @click="click(product)"
-        />
+        <q-btn v-if="buying?.key !== product.key" push color="secondary"
+          :label="`Buy for ${product.value.price.amount} ${product.value.price.unit}`" @click="click(product)" />
       </q-card-actions>
     </q-card>
   </div>
 
   <q-dialog v-model="isBuying">
     <q-card class="full-width full-height q-pa-md">
-      <q-card-section
-        v-if="buying.value.picture && buying.value.picture.length"
-      >
+      <q-card-section v-if="buying.value.picture && buying.value.picture.length">
         <q-img :src="buying.value.picture" fit="scale-down" />
       </q-card-section>
       <q-card-section>
@@ -76,20 +59,10 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <q-input
-          v-model="buyer"
-          square
-          outlined
-          label="Buyer Contact Info"
-          :hint="`For later delivery of '${buying.value.name}'.`"
-        >
+        <q-input v-model="buyer" square outlined label="Buyer Contact Info"
+          :hint="`For later delivery of '${buying.value.name}'.`">
           <template #after>
-            <q-btn
-              color="primary"
-              label="Confirm Purchase"
-              @click="buy(buying)"
-              :disabled="buyer.trim().length < 5"
-            />
+            <q-btn color="primary" label="Confirm Purchase" @click="buy(buying)" :disabled="buyer.trim().length < 5" />
           </template>
         </q-input>
       </q-card-section>
@@ -115,9 +88,7 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <pre v-if="!paid"
-          style="white-space: pre-wrap; word-break: break-all"
-        ><code>{{ invoice }}</code></pre>
+        <pre v-if="!paid" style="white-space: pre-wrap; word-break: break-all"><code>{{ invoice }}</code></pre>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -180,7 +151,7 @@
       },
 
       async buy(product) {
-        const {invoice, sale} = await bitsapp.action('buy', {
+        const { invoice, sale } = await bitsapp.action('buy', {
           buyer: this.buyer,
           product: product.key
         })

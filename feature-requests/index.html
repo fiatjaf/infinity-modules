@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<title>Feature requests</title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet"
+    type="text/css" />
+<link href="https://cdn.jsdelivr.net/npm/quasar@2.3.2/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
+
+<div id="app">
+    <div class="q-pa-md items-start q-gutter-md">
+        <div v-if="metadata.title" class="text-h4 text-primary">
+            {{ metadata.title }}
+        </div>
+
+        <div class="row">
+            <div class="col-9">
+                <q-card v-for="request in requests" :key="request.key" flat bordered>
+                    <q-card-section>
+                        <div class="q-pa-xs text-overline bg-info" style="width: max-content;">{{
+                            request.value.sats
+                            }}</div>
+                        <div class="text-h6">{{ request.value.title }}</div>
+                    </q-card-section>
+
+                    <q-card-actions>
+                        <q-btn color="grey" flat dense
+                            :icon="request.expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+                            @click="expand(request)">Description</q-btn>
+                    </q-card-actions>
+
+                    <q-slide-transition>
+                        <div v-show="request.expanded">
+
+                            <q-card-section class="text-subitle2">
+                                {{ request.value.description }}
+                            </q-card-section>
+
+                            <q-form class="q-gutter-md">
+                                <q-input filled type="number" v-model="request.amount" label="Invoice amount" lazy-rules
+                                    :rules="[
+                  val => val !== null && val !== '' || 'Please type invoice amount',
+                  val => val > 0 || 'Please type invoice amount'
+                ]" />
+                                <div>
+                                    <q-btn label="Generate invoice" @click="generate_invoice(request)"
+                                        color="primary" />
+                                </div>
+                            </q-form>
+                            <q-card-section v-if="request.invoice">
+                                <div class="row justify-center">
+                                    <div class="bg-white q-pa-md">
+                                        <qrcode-vue :value="request.invoice.toUpperCase()" :size="300"></qrcode-vue>
+                                    </div>
+                                </div>
+                            </q-card-section>
+
+                            <q-card-section>
+                                <div class="q-pa-xs row justify-center">
+                                    <input v-on:focus="$event.target.select()" :ref="request.invoice"
+                                        v-model="request.invoice" :id="request.invoice"
+                                        class="input is-medium is-rounded" type="text" readonly
+                                        placeholder="Invoice goes here">
+                                </div>
+                                <div class="q-pa-xs row justify-center">
+                                    <q-btn color="dark" icon="content_copy" label="Copy"
+                                        @click="copyToClipboard(request.invoice)" />
+                                </div>
+                            </q-card-section>
+                        </div>
+                    </q-slide-transition>
+                </q-card>
+            </div>
+
+            <div class="col">
+                <q-card flat bordered>
+                    <q-card-section>
+                        <div class="text-h6">Open a new future request</div>
+                    </q-card-section>
+                    <q-form @submit="generate_creation_invoice()" class="q-gutter-md">
+                        <div class="q-pa-xs">
+                            <q-input v-model="new_feature_request.title" filled type="text" label="Title" stack-label
+                                :dense="dense" :rules="[val => !!val || 'Field is required']" />
+                        </div>
+                        <div class="q-pa-xs">
+                            <q-input v-model="new_feature_request.description" filled type="textarea"
+                                label="Description" stack-label :dense="dense" />
+                        </div>
+                        <div class="q-pa-xs">
+                            <q-input filled type="number" v-model="new_feature_request.amount"
+                                label="Satoshis to include" lazy-rules :rules="[
+                  val => val !== null && val !== '' || 'Please type invoice amount',
+                  val => val > 0 || 'Please type invoice amount'
+                ]" />
+                        </div>
+                        <div class="q-pa-md row justify-center">
+                            <q-btn label="Submit" type="submit" color="secondary" />
+                        </div>
+                    </q-form>
+
+                    <q-slide-transition v-if="new_feature_request.invoice">
+                        <div v-show="new_feature_request.invoice" class="row justify-center">
+                            <q-card-section>
+                                <qrcode-vue :value="new_feature_request.invoice.toUpperCase()" :size="200">
+                                </qrcode-vue>
+                            </q-card-section>
+                            <q-card-section>
+                                <div class="q-pa-xs row justify-center">
+                                    <input v-on:focus="$event.target.select()" :ref="new_feature_request.invoice"
+                                        v-model="new_feature_request.invoice" :id="new_feature_request.invoice"
+                                        class="input is-medium is-rounded" type="text" readonly
+                                        placeholder="Invoice goes here">
+                                </div>
+                                <div class="q-pa-xs row justify-center">
+                                    <q-btn color="dark" icon="content_copy" label="Copy"
+                                        @click="copyToClipboard(new_feature_request.invoice)" />
+                                </div>
+                            </q-card-section>
+                        </div>
+                    </q-slide-transition>
+                </q-card>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quasar@2.3.2/dist/quasar.umd.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode.vue@3.3.3/dist/qrcode.vue.browser.min.js"></script>
+<script src="/static/app.js"></script>
+
+<script>
+    const app = Vue.createApp({
+        components: {
+            QrcodeVue
+        },
+
+        data() {
+            return {
+                metadata: {
+                    title: null,
+                },
+                requests: [],
+                new_feature_request: {
+                    title: null,
+                    description: '',
+                    amount: 1000,
+                    invoice: null,
+                },
+            }
+        },
+
+        async mounted() {
+            const session = localStorage.getItem('session')
+
+            if (session === null) {
+                const uniqueId = () => {
+                    const dateString = Date.now().toString(36);
+                    const randomness = Math.random().toString(36).substr(2);
+                    return dateString + randomness;
+                };
+                localStorage.setItem('session', uniqueId())
+            }
+
+            bitsapp.action('get_metadata').then(data => {
+                this.metadata = data
+            })
+
+            bitsapp.action('get_paid_requests').then(data => {
+                this.requests = data
+            })
+
+            bitsapp.on('request-upvoted', payment_session => {
+                const session = localStorage.getItem('session')
+                if (payment_session === session) {
+                    bitsapp.action('get_paid_requests').then(data => {
+                        this.requests = data
+                    })
+                }
+            })
+
+            bitsapp.on('request-created', payment_session => {
+                const session = localStorage.getItem('session')
+                if (payment_session === session) {
+                    bitsapp.action('get_paid_requests').then(data => {
+                        this.requests = data
+                    })
+                }
+            })
+        },
+
+        methods: {
+            copyToClipboard(invoice) {
+                const ref = this.$refs[invoice]
+
+                if (Array.isArray(ref)) {
+                    ref[0].focus()
+                } else {
+                    ref.focus();
+
+                }
+
+                document.execCommand('copy');
+            },
+
+            async generate_invoice(request) {
+                const invoice = await bitsapp.action('generate_upvote_invoice', {
+                    request: request.key,
+                    amount: parseInt(request.amount),
+                    session: localStorage.getItem('session')
+                })
+
+                request.invoice = invoice
+            },
+
+            async generate_creation_invoice() {
+                this.new_feature_request.invoice = await bitsapp.action('generate_creation_invoice', {
+                    title: this.new_feature_request.title,
+                    description: this.new_feature_request.description,
+                    sats: parseInt(this.new_feature_request.amount),
+                    session: localStorage.getItem('session')
+                })
+            },
+
+            expand(request) {
+                request.expanded = !request.expanded
+                if (request.invoice === undefined) {
+                    request.amount = 1000
+                    this.generate_invoice(request)
+                }
+            }
+        }
+    })
+
+    app.use(Quasar, {
+        brand: {
+            primary: '#f2eb1d',
+            secondary: '#0d96d6',
+            accent: '#e0367a',
+            dark: '#383838',
+            positive: '#36ad52',
+            negative: '#660c17',
+            info: '#95dfed',
+            warning: '#F2C037'
+        }
+    })
+    app.mount('#app')
+</script>
