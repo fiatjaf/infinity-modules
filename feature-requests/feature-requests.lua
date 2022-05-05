@@ -32,9 +32,11 @@ actions = {
         handler = function()
             local arr = db.request.list()
             local new_index = 1
+
             local size_orig = #arr
             for _, v in ipairs(arr) do
                 if v.value.paid then
+                    v.value.sats = v.value.sats / 1000
                     arr[new_index] = v
                     new_index = new_index + 1
                 end
@@ -59,8 +61,9 @@ actions = {
             local request_key = db.request.add({
                 title = params.title,
                 description = params.description,
-                sats = params.sats
+                sats = params.sats * 1000
             })
+            print("generate_creation_invoice", params, request_key)
 
             local invoice = wallet.create_invoice({
                 description = "Create feature request with title " .. params.title,
@@ -86,7 +89,11 @@ actions = {
             { name = 'session', required = true, type = 'string' }
         },
         handler = function(params)
+            print("generate_upvote_invoice params")
+            print(params)
             local request = db.request.get(params.request)
+            print("generate_upvote_invoice request")
+            print(request)
 
             local invoice = wallet.create_invoice({
                 description = "Upvote to " .. request.title,
@@ -106,23 +113,24 @@ actions = {
 
 triggers = {
     payment_received = function(payment)
+        print("payment_received", payment, "app_id", app.id)
+
         if payment.tag ~= app.id and not payment.extra.type then
             return
         end
 
         if payment.extra.type == 'upvote' then
-            local request = db.request.get(params.request_key)
+            local request = db.request.get(payment.extra.request_key)
 
             -- Increment request sats amount
-            db.request.update(payment.reuqest_key, { amount = request.amount + payment.amount / 1000 })
+            db.request.update(payment.extra.request_key, { sats = request.sats + payment.amount })
 
             -- Notify user on frontend
             app.emit_event('request-upvoted', payment.extra.session)
         end
 
         if payment.extra.type == 'create' then
-            -- Set that request was paid successfully
-            db.request.update(payment.request_key, { paid = true })
+            db.request.update(payment.extra.request_key, { paid = true })
 
             -- Notify user on frontend
             app.emit_event('request-created', payment.extra.session)

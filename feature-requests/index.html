@@ -15,9 +15,12 @@
             <div class="col-9">
                 <q-card v-for="request in requests" :key="request.key" flat bordered>
                     <q-card-section>
-                        <div class="q-pa-xs text-overline bg-info" style="width: max-content;">{{
+                        <div class="q-pa-xs" style="width: max-content;border-radius: 10%;background-color:#75e86d"
+                            @click="expand(request)">{{
                             request.value.sats
-                            }}</div>
+                            }}
+                            <q-icon name="keyboard_double_arrow_up" />
+                        </div>
                         <div class="text-h6">{{ request.value.title }}</div>
                     </q-card-section>
 
@@ -42,7 +45,7 @@
                 ]" />
                                 <div>
                                     <q-btn label="Generate invoice" @click="generate_invoice(request)"
-                                        color="primary" />
+                                        color="secondary" />
                                 </div>
                             </q-form>
                             <q-card-section v-if="request.invoice">
@@ -99,7 +102,8 @@
                     <q-slide-transition v-if="new_feature_request.invoice">
                         <div v-show="new_feature_request.invoice" class="row justify-center">
                             <q-card-section>
-                                <qrcode-vue :value="new_feature_request.invoice.toUpperCase()" :size="200">
+                                <qrcode-vue :value="new_feature_request.invoice.toUpperCase()" :size="400"
+                                    style="width: 100%; height: 100%; max-width: 260px">
                                 </qrcode-vue>
                             </q-card-section>
                             <q-card-section>
@@ -236,10 +240,10 @@
             secondary: '#0d96d6',
             accent: '#e0367a',
             dark: '#383838',
-            positive: '#36ad52',
+            positive: '#6ddb65',
             negative: '#660c17',
             info: '#95dfed',
-            warning: '#F2C037'
+            warning: '#F2C037',
         }
     })
     app.mount('#app')

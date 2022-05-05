@@ -52,12 +52,12 @@ models = {
 
 actions = {
   getmetadata = {
-    handler = function()
+    handler = function ()
       return db.metadata.get()
     end,
   },
   getproducts = {
-    handler = function()
+    handler = function ()
       return db.product.list()
     end,
   },
@@ -66,7 +66,7 @@ actions = {
       { name = 'buyer', required = true, type = 'string' },
       { name = 'product', required = true, type = 'ref', ref = 'product', as = 'name' },
     },
-    handler = function(params)
+    handler = function (params)
       local product = db.product.get(params.product)
       local current_price = utils.get_msats_per_fiat_unit(product.price.unit) * product.price.amount
 
@@ -92,7 +92,7 @@ actions = {
 }
 
 triggers = {
-  payment_received = function(payment)
+  payment_received = function (payment)
     if payment.tag ~= app.id or not payment.extra.sale then
       return
     end
@@ -128,7 +128,7 @@ triggers = {
       })
     end
   end,
-  hourly = function()
+  hourly = function ()
     for _, item in ipairs(db.sale.list()) do
       local olderthan1day = utils.parse_date(item.created_at) < (os.time() - 60 * 60 * 24)
       if olderthan1day and not item.value.paid then
