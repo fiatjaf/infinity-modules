@@ -153,6 +153,7 @@
         },
 
         async mounted() {
+            const $q = Quasar.useQuasar();
             const session = localStorage.getItem('session')
 
             if (session === null) {
@@ -178,6 +179,11 @@
                     bitsapp.action('get_paid_requests').then(data => {
                         this.requests = data
                     })
+
+                    $q.notify({
+                        message: 'Request was upvoted successfully.',
+                        color: 'info'
+                    })
                 }
             })
 
@@ -186,6 +192,11 @@
                 if (payment_session === session) {
                     bitsapp.action('get_paid_requests').then(data => {
                         this.requests = data
+                    })
+
+                    $q.notify({
+                        message: 'Request was created successfully.',
+                        color: 'info'
                     })
                 }
             })
