@@ -1,6 +1,10 @@
 title = 'Feature Requests'
 
-description = [[
+description = [[This module allows any project owner to create a page users can request new features from.
+
+With each request users must attach some satoshis. To upvote requests, users also attach satoshis (each counts as one vote).
+
+Project owners are free to cancel features and keep the money.
 [URL]($extBase/)
 ]]
 
@@ -89,11 +93,9 @@ actions = {
             { name = 'session', required = true, type = 'string' }
         },
         handler = function(params)
-            print("generate_upvote_invoice params")
-            print(params)
+            print("generate_upvote_invoice params", params)
             local request = db.request.get(params.request)
-            print("generate_upvote_invoice request")
-            print(request)
+            print("generate_upvote_invoice request", request)
 
             local invoice = wallet.create_invoice({
                 description = "Upvote to " .. request.title,
@@ -135,8 +137,5 @@ triggers = {
             -- Notify user on frontend
             app.emit_event('request-created', payment.extra.session)
         end
-
-
-
     end
 }
