@@ -46,7 +46,7 @@ actions = {
         return {
           tag = 'withdrawRequest',
           callback = params._url,
-          k1 = params.key,
+          k1 = key,
           defaultDescription = voucher.description,
           minWithdrawable = voucher.amount,
           maxWithdrawable = voucher.amount,
